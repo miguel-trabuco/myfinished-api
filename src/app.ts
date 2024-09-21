@@ -21,7 +21,7 @@ connectDatabase();
 
 const PORT: string | undefined = process.env.PORT;
 
-if(PORT === undefined) {
+if (PORT === undefined) {
 	throw new Error('Port is undefined');
 }
 
