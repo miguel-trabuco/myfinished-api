@@ -55,7 +55,7 @@ export class UserController {
 		return response.status(201).json({ message: 'User created' });
 	}
 
-	public static async updateUser(request: Request,response: Response): Promise<Response> {
+	public static async updateUser(request: Request, response: Response): Promise<Response> {
 		const { 
 			name,
 			email,
@@ -124,5 +124,26 @@ export class UserController {
 		}
 
 		return response.status(200).json({ message: 'User updated' });
+	}
+
+	public static async getUser(request: Request, response: Response): Promise<Response> {
+		const id: string = request.body.id;
+
+		let userDocument: IUser | null;
+		try {
+			userDocument = await UserModel.findById(id);
+			
+			if (userDocument === null) {
+				return response.status(404).json({ message: 'User not found' });
+			}
+		} catch (error) {
+			console.error(error);
+			return response.status(500).json({ message: 'Internal server error' });
+		}
+
+		return response.status(200).json({
+			name: userDocument.name,
+			email: userDocument.email
+		});
 	}
 }
