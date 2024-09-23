@@ -64,7 +64,7 @@ export class UserController {
 			id
 		}: IUpdateUserRequest = request.body;
 
-		if (!name && !email && !oldPassword && !newPassword && !id) {
+		if (!name && !email && !newPassword) {
 			return response.status(400).json({ message: 'Missed paramters' });
 		}
 
@@ -108,6 +108,10 @@ export class UserController {
 
 			if (isPasswordMatch === false) {
 				return response.status(401).json({ message: 'Wrong password' });
+			}
+
+			if (newPassword.length < 8 || newPassword.length > 500) {
+				return response.status(400).json({ message: 'Password must be betwee 6 and 500 character' });
 			}
 
 			try {
