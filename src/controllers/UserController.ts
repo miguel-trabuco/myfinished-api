@@ -48,10 +48,11 @@ export class UserController {
 			console.error(error);
 			return response.status(500).json({ message: 'Internal server error' });
 		}
-		
-		const id: string = newUser._id as string;
 
-		const token: string = jwt.sign(id, SECRET);
+		console.log(newUser);
+		const id: string = await newUser._id as string;
+
+		const token: string = jwt.sign({id}, SECRET);
 		response.set('Authorization', `Bearer ${token}`);
 		return response.status(201).json({ message: 'User created' });
 	}
