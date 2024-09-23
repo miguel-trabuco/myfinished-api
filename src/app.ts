@@ -1,11 +1,12 @@
 //Import Libs
-import express from 'express';
+import express, { request } from 'express';
 import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
 //Import Components
 import connectDatabase from './database/connectDatabase';
+import userRouter from './routes/userRouter';
 
 //Import types
 import { Application } from 'express';
@@ -18,6 +19,13 @@ app.use(cors());
 app.use(cookieParser());
 
 connectDatabase();
+
+//Config routes
+app.get('/', (request: express.Request, response: express.Response) => {
+	return response.status(200).json({ message: 'Server working' });
+});
+
+app.use('/user', userRouter);
 
 const PORT: string | undefined = process.env.PORT;
 
