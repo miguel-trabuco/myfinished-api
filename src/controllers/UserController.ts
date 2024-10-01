@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import type { Request, Response } from 'express';
 import type { IUser } from '../interfaces/IUser';
 import type { IUpdateUserRequest } from '../interfaces/IUpdateUserRequest';
-
+import { v4 as uuid } from 'uuid';
 
 export class UserController {
 	public static async createUser(request: Request, response: Response): Promise<Response> {
@@ -33,13 +33,13 @@ export class UserController {
 			console.log('Secret undefined');
 			return response.status(500).json({ message: 'Internal server error' });
 		}
-
 		
 		const passwordHash: string = await bcrypt.hash(password, 10);
 
-		let newUser: IUser;
+		const id: string = uuid();
 		try {
-			newUser = await UserModel.create({
+			await UserModel.create({
+				id,
 				name,
 				email,
 				passwordHash
@@ -48,9 +48,6 @@ export class UserController {
 			console.error(error);
 			return response.status(500).json({ message: 'Internal server error' });
 		}
-
-		console.log(newUser);
-		const id: string = await newUser._id as string;
 
 		const token: string = jwt.sign({id}, SECRET);
 		response.set('Authorization', `Bearer ${token}`);
@@ -72,7 +69,7 @@ export class UserController {
 
 		if (name) {
 			try {
-				await UserModel.updateOne({_id: id}, {name});
+				await UserModel.updateOne({id}, {name});
 			} catch (error) {
 				console.error(error);
 				return response.status(500).json({ message: 'Internal server error' });
@@ -81,7 +78,7 @@ export class UserController {
 
 		if (email) {
 			try {
-				await UserModel.updateOne({_id: id}, {email});
+				await UserModel.updateOne({id}, {email});
 			} catch (error) {
 				console.error(error);
 				return response.status(500).json({ message: 'Internal server error' });
@@ -95,7 +92,7 @@ export class UserController {
 
 			let userDocument: IUser | null;
 			try {
-				userDocument = await UserModel.findById(id);
+				userDocument = await UserModel.findOne({id});
 
 				if (userDocument === null) {
 					return response.status(404).json({ message: 'User not found' });
@@ -118,7 +115,7 @@ export class UserController {
 
 			try {
 				const passwordHash: string = await bcrypt.hash(newPassword, 10);
-				await UserModel.updateOne({_id: id}, {passwordHash});
+				await UserModel.updateOne({id}, {passwordHash});
 			} catch (error) {
 				console.error(error);
 				return response.status(500).json({ message: 'Internal server error' });
@@ -133,7 +130,7 @@ export class UserController {
 
 		let userDocument: IUser | null;
 		try {
-			userDocument = await UserModel.findById(id);
+			userDocument = await UserModel.findOne({id});
 			
 			if (userDocument === null) {
 				return response.status(404).json({ message: 'User not found' });
@@ -149,3 +146,4 @@ export class UserController {
 		});
 	}
 }
+
