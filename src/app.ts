@@ -1,5 +1,5 @@
 //Import Libs
-import express, { request } from 'express';
+import express from 'express';
 import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
