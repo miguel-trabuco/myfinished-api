@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { JwtPayload } from 'jsonwebtoken';
 
 export default function verifyTokenMiddleware(request: Request, response: Response, next: NextFunction): Response | void {
 	const bearerToken: string | undefined = request.headers['authorization'];
@@ -17,7 +18,7 @@ export default function verifyTokenMiddleware(request: Request, response: Respon
 	}
 
 	try {
-		const id = jwt.verify(token, SECRET);
+		const id = (jwt.verify(token, SECRET) as JwtPayload).id as string;
 		request.body.id = id;
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	} catch (error) {
