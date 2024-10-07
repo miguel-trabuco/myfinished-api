@@ -158,5 +158,42 @@ export class UserController {
 		
 		return response.status(200).json({ message: 'Deleted user' });
 	}
+
+	public static async login(request: Request, response: Response) {
+		const { email, password }: { email: string, password: string } = request.body;
+
+		if (!email || !password) {
+			return response.status(400).json({ message: 'Email and password are required' });
+		}
+
+		let userDocument: IUser | null;
+		try {
+			userDocument = await UserModel.findOne({ email });
+			
+			if (userDocument === null) {
+				return response.status(400).json({ message: 'Wrong email' });
+			}
+		} catch (error) {
+			console.error(error);
+			return response.status(500).json({ message: 'Internal server error' });
+		}
+
+		const isMatch: boolean = await bcrypt.compare(password, userDocument.passwordHash);
+
+		if (!isMatch) {
+			return response.status(401).json({ message: 'Wrong password' });
+		}
+
+		const SECRET: string | undefined = process.env.SECRET;
+		if (SECRET === undefined) {
+			console.log('Secret undefined');
+			return response.status(500).json({ message: 'Internal server error' });
+		}
+
+		const id: string = userDocument.id;
+		const token: string = jwt.sign({id}, SECRET);
+		response.set('authorization', `Bearer ${token}`);
+		return response.status(201).json({ message: 'Logged' });
+	}
 }
 
