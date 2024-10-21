@@ -4,9 +4,9 @@
   "description": "A backend application for MyFinished Website",
   "main": "app.js",
   "scripts": {
-    "dev": "tsx --watch ./src/app.ts",
+    "dev": "tsx --watch ./src/server.ts",
     "build": "tsc",
-    "start": "node ./build/app.js"
+    "start": "node ./build/server.js"
   },
   "author": "Miguel Trabuco (Trabuco Labs)",
   "license": "MIT",
