@@ -8,5 +8,6 @@ export const responseMessages = {
 	USER_CREATED: 'User created',
 	USER_UPDATED: 'User updated',
 	USER_DELETED: 'User deleted',
-	LOGGED: 'Logged'
+	LOGGED: 'Logged',
+	EMAIL_USED: 'Email already used'
 };
