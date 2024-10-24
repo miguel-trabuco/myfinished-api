@@ -1,5 +1,5 @@
 export const responseMessages = {
-	MISSING_PARAMETERS: (params: string[]) => `Missing parameters: ${params.join(', ')}`,
+	MISSING_PARAMETERS: 'Missing parameters',
 	PASSWORD_LENGTH: 'Password must be betwee 6 and 500 character',
 	SERVER_ERROR: 'Internal server error',
 	USER_NOT_FOUND: 'User not found',
