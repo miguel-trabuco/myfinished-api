@@ -2,9 +2,8 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import userRouter from './routes/userRouter';
-import { Application } from 'express';
 
-const app: Application = express();
+const app = express();
 
 //App config
 app.use(express.json());
@@ -18,4 +17,4 @@ app.get('/', (request: express.Request, response: express.Response) => {
 
 app.use('/user', userRouter);
 
-export default app;
+export { app };
