@@ -1,9 +1,9 @@
 import { Router } from 'express';
 
 //Import controllers
-import { UserController } from '../controllers/UserController';
+import { UserController } from '../controllers/index';
 
-import verifyTokenMiddleware from '../middlewares/verifyTokenMiddleware';
+import { verifyTokenMiddleware } from '../middlewares/verifyToken.middleware';
 
 const userRouter: Router = Router();
 
@@ -13,4 +13,4 @@ userRouter.delete('/delete', verifyTokenMiddleware, UserController.deleteUser);
 userRouter.post('/login', UserController.login);
 userRouter.get('/', verifyTokenMiddleware, UserController.getUser);
 
-export default userRouter;
+export { userRouter };

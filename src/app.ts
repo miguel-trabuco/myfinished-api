@@ -1,7 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import userRouter from './routes/userRouter';
+import { userRouter } from './routes/index';
 
 const app = express();
 
