@@ -1,37 +1,40 @@
-import UserModel from '../database/models/userModel';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
+import { UserModel } from '../database/models/index';
+import { responseMessages } from '../util/responseMessages';
 import type { Request, Response } from 'express';
-import type { IUser } from '../interfaces/IUser';
-import type { IUpdateUserRequest } from '../interfaces/IUpdateUserRequest';
+import type { User } from '../interfaces/index';
 
 export class UserController {
 	public static async createUser(request: Request, response: Response): Promise<Response> {
-		const { name, email, password }: { name: string, email: string, password: string } = request.body;
+		const { name, email, password } = request.body;
 
 		if (!name || !email || !password) {
-			return response.status(400).json({ message: 'Name, email and password are required' });
-		}
+			return response.status(400).json({ 
+				message: responseMessages.MISSING_PARAMETERS(['name', 'email', 'password']) 
+			});
+		} 
 
 		try {
-			const userExist: IUser | null = await UserModel.findOne({email});
+			const userExist: User | null = await UserModel.findOne({email});
 			if (userExist) {
-				return response.status(400).json({ message: 'Email already used' });
-			}
+				return response.status(400).json({ message: responseMessages.EMAIL_USED });
+			} 
+
 		} catch (error) {
 			console.error(error);
-			return response.status(500).json({ message: 'Internal server error' });
+			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
 		}
 
 		if (password.length < 8 || password.length > 500) {
-			return response.status(400).json({ message: 'Password must be betwee 6 and 500 character' });
-		}
+			return response.status(400).json({ message: responseMessages.PASSWORD_LENGTH });
+		} 
 
-		const SECRET: string | undefined = process.env.SECRET;
-		if (SECRET === undefined) {
+		const SECRET = process.env.SECRET;
+		if (!SECRET) {
 			console.log('Secret undefined');
-			return response.status(500).json({ message: 'Internal server error' });
+			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
 		}
 		
 		const passwordHash: string = await bcrypt.hash(password, 10);
@@ -46,12 +49,12 @@ export class UserController {
 			});
 		} catch (error) {
 			console.error(error);
-			return response.status(500).json({ message: 'Internal server error' });
+			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
 		}
 
 		const token: string = jwt.sign({id}, SECRET);
 		response.set('authorization', `Bearer ${token}`);
-		return response.status(201).json({ message: 'User created' });
+		return response.status(201).json({ message: responseMessages.USER_CREATED });
 	}
 
 	public static async updateUser(request: Request, response: Response): Promise<Response> {
