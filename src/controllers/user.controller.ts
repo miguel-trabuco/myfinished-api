@@ -11,9 +11,7 @@ export class UserController {
 		const { name, email, password } = request.body;
 
 		if (!name || !email || !password) {
-			return response.status(400).json({ 
-				message: responseMessages.MISSING_PARAMETERS(['name', 'email', 'password']) 
-			});
+			return response.status(400).json({ message: responseMessages.MISSING_PARAMETERS });
 		} 
 
 		try {
@@ -58,74 +56,57 @@ export class UserController {
 	}
 
 	public static async updateUser(request: Request, response: Response): Promise<Response> {
-		const { 
-			name,
-			email,
-			oldPassword,
-			newPassword,
-			id
-		}: IUpdateUserRequest = request.body;
+		const { name, email, oldPassword, newPassword, id } = request.body;
 
 		if (!name && !email && !newPassword) {
-			return response.status(400).json({ message: 'Missed paramters' });
+			return response.status(400).json({
+				message: responseMessages.MISSING_PARAMETERS});
 		}
 
-		if (name) {
-			try {
-				await UserModel.updateOne({id}, {name});
-			} catch (error) {
-				console.error(error);
-				return response.status(500).json({ message: 'Internal server error' });
-			}
-		}
+		
 
-		if (email) {
-			try {
-				await UserModel.updateOne({id}, {email});
-			} catch (error) {
-				console.error(error);
-				return response.status(500).json({ message: 'Internal server error' });
-			}
-		}
+		try {
 
-		if (newPassword) {
-			if (!oldPassword) {
-				return response.status(401).json({ message: 'Password is required' });
+			const userDocument: User | null = await UserModel.findOne({id});
+
+			if (!userDocument) {
+				return response.status(404).json({
+					message: responseMessages.USER_NOT_FOUND
+				});
 			}
 
-			let userDocument: IUser | null;
-			try {
-				userDocument = await UserModel.findOne({id});
-
-				if (userDocument === null) {
-					return response.status(404).json({ message: 'User not found' });
+			if (name) userDocument.name = name;
+			if (email) userDocument.email = email;
+			if (newPassword) {
+				if (!oldPassword) {
+					return response.status(400).json({
+						message: responseMessages.MISSING_PARAMETERS
+					});
 				}
 
-			} catch (error) {
-				console.error(error);
-				return response.status(500).json({ message: 'Internal server error' });
+				if (!await bcrypt.compare(oldPassword, userDocument.passwordHash)) {
+					return response.status(400).json({
+						message: responseMessages.WRONG_PASSWORD
+					});
+				}
+
+				if (newPassword.length < 8 || newPassword.length > 500) {
+					return response.status(400).json({
+						message: responseMessages.PASSWORD_LENGTH
+					});
+				}
+
+				userDocument.passwordHash = await bcrypt.hash(newPassword, 10);
 			}
 
-			const isPasswordMatch: boolean = await bcrypt.compare(oldPassword, userDocument.passwordHash);
-
-			if (isPasswordMatch === false) {
-				return response.status(401).json({ message: 'Wrong password' });
-			}
-
-			if (newPassword.length < 8 || newPassword.length > 500) {
-				return response.status(400).json({ message: 'Password must be betwee 6 and 500 character' });
-			}
-
-			try {
-				const passwordHash: string = await bcrypt.hash(newPassword, 10);
-				await UserModel.updateOne({id}, {passwordHash});
-			} catch (error) {
-				console.error(error);
-				return response.status(500).json({ message: 'Internal server error' });
-			}
+			await userDocument.save();
+			
+		} catch (error) {
+			console.error(error);
+			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
 		}
 
-		return response.status(200).json({ message: 'User updated' });
+		return response.status(200).json({ message: responseMessages.USER_UPDATED });
 	}
 
 	public static async getUser(request: Request, response: Response): Promise<Response> {
