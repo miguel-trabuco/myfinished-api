@@ -4,6 +4,7 @@ import type { List } from '../../interfaces/index';
 const ListSchema: mongoose.Schema<List> = new mongoose.Schema({
 	name: { type: String, required: true },
 	userID: { type: String, required: true },
+	listID: {type: String, required: true },
 	itemsAmount: { type: Number, required: true }
 });
 

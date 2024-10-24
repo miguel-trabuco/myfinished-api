@@ -9,5 +9,6 @@ export const responseMessages = {
 	USER_UPDATED: 'User updated',
 	USER_DELETED: 'User deleted',
 	LOGGED: 'Logged',
-	EMAIL_USED: 'Email already used'
+	EMAIL_USED: 'Email already used',
+	WRONG_EMAIL: 'Wrong email'
 };

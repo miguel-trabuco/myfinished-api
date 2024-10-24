@@ -37,10 +37,10 @@ export class UserController {
 		
 		const passwordHash: string = await bcrypt.hash(password, 10);
 
-		const id: string = uuid();
+		const userID = uuid();
 		try {
 			await UserModel.create({
-				id,
+				userID,
 				name,
 				email,
 				passwordHash
@@ -50,24 +50,22 @@ export class UserController {
 			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
 		}
 
-		const token: string = jwt.sign({id}, SECRET);
+		const token: string = jwt.sign({userID}, SECRET);
 		response.set('authorization', `Bearer ${token}`);
 		return response.status(201).json({ message: responseMessages.USER_CREATED });
 	}
 
 	public static async updateUser(request: Request, response: Response): Promise<Response> {
-		const { name, email, oldPassword, newPassword, id } = request.body;
+		const { name, email, oldPassword, newPassword, userID } = request.body;
 
 		if (!name && !email && !newPassword) {
 			return response.status(400).json({
 				message: responseMessages.MISSING_PARAMETERS});
 		}
 
-		
-
 		try {
 
-			const userDocument: User | null = await UserModel.findOne({id});
+			const userDocument: User | null = await UserModel.findOne({userID});
 
 			if (!userDocument) {
 				return response.status(404).json({
@@ -110,12 +108,12 @@ export class UserController {
 	}
 
 	public static async getUser(request: Request, response: Response): Promise<Response> {
-		const id: string = request.body.id;
+		const userID = request.body.userID;
 
 		let userDocument: User | null;
 
 		try {
-			userDocument = await UserModel.findOne({id});
+			userDocument = await UserModel.findOne({userID});
 		} catch (error) {
 			console.error(error);
 			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
@@ -132,53 +130,51 @@ export class UserController {
 	}
 
 	public static async deleteUser(request: Request, response: Response): Promise<Response> {
-		const id: string = request.body.id;
+		const id = request.body.id;
 
 		try {
 			await UserModel.deleteOne({id});
 		} catch (error) {
 			console.error(error);
-			return response.status(500).json({ message: 'Internal server error' });
+			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
 		}
 		
-		return response.status(200).json({ message: 'Deleted user' });
+		return response.status(200).json({ message: responseMessages.USER_DELETED });
 	}
 
 	public static async login(request: Request, response: Response) {
-		const { email, password }: { email: string, password: string } = request.body;
+		const { email, password } = request.body;
 
 		if (!email || !password) {
-			return response.status(400).json({ message: 'Email and password are required' });
+			return response.status(400).json({ message: responseMessages.MISSING_PARAMETERS });
 		}
 
-		let userDocument: IUser | null;
+		let userDocument: User | null;
+
 		try {
 			userDocument = await UserModel.findOne({ email });
-			
-			if (userDocument === null) {
-				return response.status(400).json({ message: 'Wrong email' });
-			}
 		} catch (error) {
 			console.error(error);
-			return response.status(500).json({ message: 'Internal server error' });
+			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
 		}
 
-		const isMatch: boolean = await bcrypt.compare(password, userDocument.passwordHash);
+		if (!userDocument) {
+			return response.status(400).json({ message: responseMessages.WRONG_EMAIL });
+		}
 
-		if (!isMatch) {
-			return response.status(401).json({ message: 'Wrong password' });
+		if (!await bcrypt.compare(password, userDocument.passwordHash)) {
+			return response.status(401).json({ message: responseMessages.WRONG_PASSWORD });
 		}
 
 		const SECRET: string | undefined = process.env.SECRET;
-		if (SECRET === undefined) {
+		if (!SECRET) {
 			console.log('Secret undefined');
-			return response.status(500).json({ message: 'Internal server error' });
+			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
 		}
 
-		const id: string = userDocument.id;
-		const token: string = jwt.sign({id}, SECRET);
+		const token: string = jwt.sign({userID: userDocument.userID}, SECRET);
 		response.set('authorization', `Bearer ${token}`);
-		return response.status(201).json({ message: 'Logged' });
+		return response.status(201).json({ message: responseMessages.LOGGED });
 	}
 }
 
