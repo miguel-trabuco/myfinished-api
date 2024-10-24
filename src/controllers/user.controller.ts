@@ -112,16 +112,17 @@ export class UserController {
 	public static async getUser(request: Request, response: Response): Promise<Response> {
 		const id: string = request.body.id;
 
-		let userDocument: IUser | null;
+		let userDocument: User | null;
+
 		try {
 			userDocument = await UserModel.findOne({id});
-			
-			if (userDocument === null) {
-				return response.status(404).json({ message: 'User not found' });
-			}
 		} catch (error) {
 			console.error(error);
-			return response.status(500).json({ message: 'Internal server error' });
+			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
+		}
+
+		if (!userDocument) {
+			return response.status(404).json({ message: responseMessages.USER_NOT_FOUND });
 		}
 
 		return response.status(200).json({
