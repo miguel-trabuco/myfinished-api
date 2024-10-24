@@ -50,7 +50,7 @@ export class UserController {
 			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
 		}
 
-		const token: string = jwt.sign({userID}, SECRET);
+		const token = jwt.sign({userID}, SECRET);
 		response.set('authorization', `Bearer ${token}`);
 		return response.status(201).json({ message: responseMessages.USER_CREATED });
 	}
@@ -130,10 +130,10 @@ export class UserController {
 	}
 
 	public static async deleteUser(request: Request, response: Response): Promise<Response> {
-		const id = request.body.id;
+		const userID = request.body.userID;
 
 		try {
-			await UserModel.deleteOne({id});
+			await UserModel.deleteOne({userID});
 		} catch (error) {
 			console.error(error);
 			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
@@ -166,13 +166,13 @@ export class UserController {
 			return response.status(401).json({ message: responseMessages.WRONG_PASSWORD });
 		}
 
-		const SECRET: string | undefined = process.env.SECRET;
+		const SECRET = process.env.SECRET;
 		if (!SECRET) {
 			console.log('Secret undefined');
 			return response.status(500).json({ message: responseMessages.SERVER_ERROR });
 		}
 
-		const token: string = jwt.sign({userID: userDocument.userID}, SECRET);
+		const token = jwt.sign({userID: userDocument.userID}, SECRET);
 		response.set('authorization', `Bearer ${token}`);
 		return response.status(201).json({ message: responseMessages.LOGGED });
 	}
